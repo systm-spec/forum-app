@@ -1,15 +1,12 @@
 
 
 import Link from "next/link";
-import { Feed } from "@/components/feed";
+import { Suspense } from "react";
+import { FeedFallback, SearchableFeed } from "@/components/feed";
 import { InfoPanel } from "@/components/info-panel";
 import { communities, posts } from "@/lib/demo-data";
-import { readQuery } from "@/lib/search";
 
-const HomePage = async ({ searchParams }: PageProps<"/">) => {
-  const query = readQuery((await searchParams).q);
-
-  return (
+const HomePage = ({ searchParams }: PageProps<"/">) => (
     <>
       <main id="main-content" className="main-column">
         <div className="page-heading">
@@ -17,7 +14,9 @@ const HomePage = async ({ searchParams }: PageProps<"/">) => {
           <h1>Im Gespräch</h1>
           <p>Gedanken, Fragen und Entdeckungen aus allen Communitys.</p>
         </div>
-        <Feed posts={posts} communities={communities} query={query} />
+        <Suspense fallback={<FeedFallback />}>
+          <SearchableFeed posts={posts} communities={communities} searchParams={searchParams} />
+        </Suspense>
       </main>
       <aside className="right-column" aria-label="Über das Forum">
         <InfoPanel title="Willkommen im Forum" eyebrow="Über diesen Ort">
@@ -35,7 +34,6 @@ const HomePage = async ({ searchParams }: PageProps<"/">) => {
         </InfoPanel>
       </aside>
     </>
-  );
-};
+);
 
 export default HomePage;

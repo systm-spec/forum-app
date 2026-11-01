@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { HiOutlineArrowLeft } from "react-icons/hi2";
 import { CommentTree } from "@/components/comment-tree";
@@ -8,7 +9,7 @@ import { comments, communities, posts } from "@/lib/demo-data";
 
 type ThreadPageProps = { params: Promise<{ slug: string; id: string }> };
 
-const ThreadPage = async ({ params }: ThreadPageProps) => {
+const ThreadContent = async ({ params }: ThreadPageProps) => {
   const { slug, id } = await params;
   const community = communities.find((item) => item.slug === slug);
   const post = posts.find((item) => item.id === id && item.communitySlug === slug);
@@ -44,5 +45,15 @@ const ThreadPage = async ({ params }: ThreadPageProps) => {
     </>
   );
 };
+
+const ThreadPage = ({ params }: ThreadPageProps) => (
+  <Suspense fallback={
+    <main id="main-content" className="main-column">
+      <div className="post-card post-detail" role="status">Thread wird geladen …</div>
+    </main>
+  }>
+    <ThreadContent params={params} />
+  </Suspense>
+);
 
 export default ThreadPage;
