@@ -162,8 +162,4 @@ Die installierte Next.js-Version kann bei `next dev` automatisch eine `AGENTS.md
 
 ## Offene Punkte und Prüfstand
 
-- Noch nicht implementiert: eigene Beiträge erstellen, Community-Beitritt, wählbare Feed-Sortierung, Bearbeiten/Löschen, Moderation, Profilbearbeitung und Passwort-Wiederherstellung. Chat, Awards und komplexe Empfehlungen sind mögliche spätere Erweiterungen, kein aktueller Auftrag.
-- Passwort-Minimum und Formulartexte angleichen; eine tatsächlich mitgelieferte `.env.example` fehlt. Diese Dokumentationsänderung ergänzt weder Code noch Dateien für diese Punkte.
-- Endgültiger Name, Logo und Hosting bleiben offen. Spezialfunktionen einer späteren Diskussionsplattform werden separat entwickelt.
-- Beim Dokumentationsabgleich war `forum-app-postgres-1` gestoppt und die konfigurierte Datenbankverbindung wurde abgewiesen. Die beiden Migrationsdateien sind im Repository vorhanden; aktuelles Live-Schema und angewendete Migrationen konnten deshalb nicht erneut abgeglichen werden. Datenbankinhalte wurden nicht verändert.
-- Für die zuvor implementierten Profile, Votes und Kommentare sind frühere erfolgreiche Lint-/Typprüfungen dokumentiert; neue Browser- und Parallelitätsprüfungen sind nicht belegt. Für diese README-Aktualisierung wurden Code, Konfigurationen und der Diff geprüft, keine neuen Funktionsprüfungen durchgeführt.
+- Noch nicht implementiert: eigene Beiträge erstellen, Community-Beitritt, wählbare Feed-Sortierung, Bearbeiten/Löschen, Moderation, Profilbearbeitung und Passwort-Wiederherstellung. Chat, Awards und komplexe Empfehlungen sind mögliche spätere Erweiterungen.
