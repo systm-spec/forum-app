@@ -1,29 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Source_Sans_3 } from "next/font/google";
+import { Header } from "@/components/header";
+import { Navigation } from "@/components/navigation";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const sourceSans = Source_Sans_3({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "forum-app",
-  description: "a boilerplate for a forum",
+  title: "Forum",
+  description: "Ein Ort für gute Fragen und gemeinsame Ideen.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
-    </html>
-  );
-}
+const RootLayout = ({ children }: LayoutProps<"/">) => (
+  <html lang="de" className={sourceSans.className}>
+    <body>
+      <a className="skip-link" href="#main-content">Zum Inhalt springen</a>
+      <Header />
+      <div className="app-grid">
+        <Navigation />
+        {children}
+      </div>
+    </body>
+  </html>
+);
+
+export default RootLayout;
