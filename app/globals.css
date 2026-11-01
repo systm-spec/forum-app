@@ -43,6 +43,7 @@ h1, h2, h3, p { margin-top: 0; }
 .search-form input::placeholder { color: var(--muted); opacity: 1; }
 .search-form button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
 .search-form button:hover { color: var(--accent); }
+.search-form button:disabled { color: var(--soft); cursor: wait; }
 .login-button { display: inline-flex; align-items: center; justify-self: end; gap: 9px; min-width: 0; padding: 7px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--muted); cursor: not-allowed; text-align: left; }
 .login-button svg { width: 22px; height: 22px; flex: none; }
 .login-button span { line-height: 1.1; }

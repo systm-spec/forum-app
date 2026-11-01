@@ -6,6 +6,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
+<!-- END:nextjs-agent-rules -->
+
 # Projektanweisungen
 
 ## Ziel und Arbeitsumfang
@@ -20,9 +22,9 @@ Das Projekt dient als Portfolio-Projekt und soll später nutzbar sein können.
 - Halte die Architektur dem Umfang eines Forums angemessen: klare Zuständigkeiten, kurze nachvollziehbare Wege und wenige Abstraktionsebenen.
 - Datenbank, Auth-Anbieter, Hosting, endgültiger Name und Logo sind noch offen. Lege sie nicht beiläufig als verbindliche Projektentscheidungen fest. Verwende bei Bedarf klar erkennbare Platzhalter.
 
-## Aktueller Stand nach dem ersten Implementierungsschritt
+## Aktueller Umsetzungsstand
 
-Letzter gemeldeter Stand aus dem Umsetzungsbericht:
+Stand nach der Stabilisierung des UI-Grundgerüsts:
 
 - Das Next.js-Projekt ist initialisiert, die Starter-Inhalte sind entfernt, Prettier ist eingerichtet und das Repository liegt privat auf GitHub.
 - Homefeed, Community-Seiten und direkt aufrufbare Thread-Ansichten mit eingerückten Kommentaren sind umgesetzt.
@@ -30,7 +32,10 @@ Letzter gemeldeter Stand aus dem Umsetzungsbericht:
 - Das Layout ist responsiv und durchgehend dunkel. Source Sans 3 ersetzt Geist.
 - `Forum` bleibt der vorläufige Name.
 - Login, eigene Beiträge, Antworten und echte Abstimmungen sind noch nicht verfügbar. Die angezeigten Stimmzahlen sind Demodaten.
-- `pnpm lint` und `pnpm exec tsc --noEmit` liefen laut Bericht erfolgreich durch. Dies beschreibt den gemeldeten Stand; nach Codeänderungen sind die Prüfungen erneut auszuführen.
+- Laufzeitabhängige URL-Hooks, `params` und `searchParams` liegen unter Suspense-Grenzen mit deterministischen Fallbacks. Die statische Header- und Navigationsstruktur bleibt darstellbar; Suchziel und Suchtext folgen der URL. Cache Components, Partial Prefetching und deren Validierung bleiben aktiv.
+- Begrenzter Dev-Server-Check: Home, alle drei Communitys, alle vier Threads, Suchtreffer und leere Ergebnisse, unbekannte URLs sowie falsche Community-/Thread-Zuordnungen geprüft. Gerenderte Inhalte, Suchformular, aktive Navigation, Kommentarzahlen und Serverlogs wurden kontrolliert. Dynamische Nicht-gefunden-Fälle senden den gestreamten Next.js-404-Zustand mit `noindex`.
+- Browserprüfungen einschließlich Klicknavigation, Zurück/Vorwärts und Browserkonsole waren mangels verfügbarer Browserwerkzeuge und Browser nicht möglich.
+- `pnpm lint` und `pnpm exec tsc --noEmit` liefen erfolgreich durch. Nach Codeänderungen sind die Prüfungen erneut auszuführen.
 
 Gleiche diesen Überblick vor neuen Aufgaben mit dem tatsächlichen Code ab und
 pflege ihn bei fachlichen Änderungen kurz mit. Er ist kein Auftrag, alle noch
@@ -126,7 +131,3 @@ fehlenden Funktionen gleichzeitig umzusetzen.
 - Berücksichtige bei Layoutänderungen Desktop und schmale Bildschirme, Überlappungen durch den fixierten Header sowie Tastaturbedienung.
 - Berichte abschließend kurz, was geändert wurde, welche Prüfungen tatsächlich liefen und welche Einschränkungen noch bestehen.
 - Dokumentiere Startbefehle und ausführliche Einrichtungshinweise in der README. Halte diese AGENTS.md auf Projektleitplanken und den kurzen aktuellen Umsetzungsstand konzentriert.
-
-
-<!-- END:nextjs-agent-rules -->
-
