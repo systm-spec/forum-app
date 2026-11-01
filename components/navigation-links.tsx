@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiOutlineHome, HiOutlineSquares2X2 } from "react-icons/hi2";
-import { communities } from "@/lib/demo-data";
+import { communities } from "@/lib/communities";
 
 type NavigationLinksProps = { pathname?: string };
 

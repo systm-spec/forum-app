@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 import { getCurrentUser } from "@/lib/auth/session";
+import { profilePath } from "@/lib/format";
 import { LogoutForm } from "./logout-form";
 
 export const AccountFallback = () => (
@@ -16,9 +17,9 @@ export const AccountControls = async () => {
     <div className="account-controls">
       {user ? (
         <>
-          <span className="account-name" title={`Angemeldet als ${user.nickname}`}>
+          <Link className="account-name" href={profilePath(user.nickname)} title={`Profil von ${user.nickname}`}>
             <HiOutlineUserCircle aria-hidden="true" /><span>{user.nickname}</span>
-          </span>
+          </Link>
           <LogoutForm />
         </>
       ) : (

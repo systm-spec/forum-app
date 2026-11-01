@@ -1,6 +1,6 @@
 # Forum
 
-Community- und Forum-App mit Next.js App Router, React und TypeScript. „Forum“ ist der vorläufige Name. Öffentliche Feeds und Diskussionen verwenden feste Beispieldaten; Nutzerkonten liegen in PostgreSQL.
+Community- und Forum-App mit Next.js App Router, React und TypeScript. „Forum“ ist der vorläufige Name. Nutzerkonten, Beiträge, Kommentare und Stimmen liegen in PostgreSQL.
 
 ## Voraussetzungen
 
@@ -52,7 +52,7 @@ Die Container-Zugangsdaten werden bei der ersten Initialisierung des Volumes ges
 
 ## Schema und Migrationen
 
-Das Nutzerschema steht in `lib/db/schema.ts`. Die SQL-Migrationen einschließlich Drizzle-Metadaten liegen versioniert in `drizzle/`. Nach einer Schemaänderung:
+Das Datenmodell steht in `lib/db/schema.ts`. Die SQL-Migrationen einschließlich Drizzle-Metadaten liegen versioniert in `drizzle/`. Nach einer Schemaänderung:
 
 ```bash
 pnpm db:generate --name=beschreibung_der_aenderung
@@ -82,17 +82,37 @@ Next.js **16.4.3** und React **19.3.0** bleiben unverändert. Auth.js wird entsp
 
 Drizzle ORM **0.45.4** und Drizzle Kit **0.31.11** verwenden den [offiziell unterstützten node-postgres-Treiber](https://orm.drizzle.team/docs/get-started-postgresql) **pg 8.23.1**. Die Abhängigkeiten sind über pnpm festgehalten. Das [offizielle PostgreSQL-18-Image](https://hub.docker.com/_/postgres) bestimmt den verwendeten Volume-Pfad. Source Sans 3, dunkles Design, Cache Components und Partial Prefetching bleiben erhalten.
 
-## Aktueller Funktionsumfang und Prüfungen
+## Forum-Funktionen
 
-Home (`/`), Communitys (`/c/[slug]`) und Threads (`/c/[slug]/post/[id]`) bleiben öffentlich lesbar. Beiträge, Kommentare und angezeigte Stimmen stammen weiterhin aus `lib/demo-data.ts`. Die Suche filtert Titel, Text und Autor des jeweiligen Feeds über `q` in der URL. Eigene Beiträge, Antworten und Abstimmungen folgen später und können die vorhandene Nutzer-ID verwenden.
+Home (`/`), Communitys (`/c/[slug]`), Threads (`/c/[slug]/post/[id]`) und Profile (`/u/[nickname]`) sind öffentlich lesbar. Die Themenräume stehen in `lib/communities.ts`. Die Suche filtert Titel, Text und Autor des jeweiligen Feeds über `q` in der URL.
+
+Profile zeigen ausschließlich Nickname, Registrierungsdatum und die dem Nutzer zugeordneten Beiträge und Kommentare. Autoren mit Nutzerkonto sowie der angemeldete Nutzer im Header sind verlinkt. Kommentare im Profil führen direkt zum Kommentaranker im jeweiligen Thread. Unbekannte Nutzer und Profile ohne Inhalte haben eigene Zustände.
+
+Angemeldete Nutzer können Beiträge und Kommentare up- oder downvoten. Derselbe Pfeil nimmt eine bestehende Stimme zurück; der Gegenpfeil wechselt die Richtung. Zusammengesetzte Primärschlüssel und Datenbankbedingungen erlauben nur eine Stimme pro Nutzer/Ziel mit dem Wert −1 oder +1. Keine Stimme wird als fehlende Zeile gespeichert. Eine PostgreSQL-Transaktionssperre pro Nutzer/Ziel serialisiert die Umschaltung auch bei parallelen Requests. Gesamtstand und eigene Stimme stammen aus derselben Leseabfrage. Während der Übermittlung sind beide Pfeile gesperrt; nach einem unklaren Fehler wird der aktuelle Stand neu geladen, statt die Umschaltung automatisch zu wiederholen.
+
+Kommentare und Antworten enthalten 1–10.000 Zeichen nach dem Entfernen äußerer Leerzeichen. Autor und Nutzer-ID stammen ausschließlich aus der serverseitigen Sitzung. Elternkommentare werden serverseitig geprüft; ein zusammengesetzter Fremdschlüssel erzwingt zusätzlich denselben Beitrag. Ein Übermittlungsschlüssel wird bei Wiederholung derselben fehlgeschlagenen Übermittlung wiederverwendet und pro Autor eindeutig gespeichert. Text bleibt bei Fehlern erhalten. Erfolgreiche Aktionen aktualisieren Feed, Community, Thread und Profilansichten über Next.js-Revalidierung und Router-Refresh. Gäste gelangen über klar beschriftete Links zum Login; serverseitige Schreibaktionen prüfen die Sitzung unabhängig von der Oberfläche.
+
+Schreibaktionen verwenden Next.js Server Actions wie die vorhandene Authentifizierung. Der Framework-Transport ist eine dokumentierte Ausnahme von der Axios-Präferenz; für Datenbankzugriffe werden keine eigenen HTTP-Endpunkte benötigt. Nutzerbezogene Stimmen werden pro Anfrage gelesen und nicht global gecacht. Neue Routen und Datenzugriffe liegen unter Suspense-Grenzen mit festen Ladezuständen. Tiefere Kommentarzweige behalten ihre Struktur und begrenzen die visuelle Einrückung auf schmalen Bildschirmen.
+
+Eigene Beiträge erstellen, Bearbeiten, Löschen, Moderation und Profilbearbeitung gehören derzeit nicht zum Funktionsumfang.
+
+## Erforderliche Inhaltsmigration
+
+```bash
+pnpm db:migrate
+```
+
+`0001_forum_content.sql` wurde auf die vorhandene Datenbank angewendet. Auf weiteren Installationen wird sie mit dem obigen Befehl angewendet. Sie ergänzt Beiträge, Kommentare und beide Stimmtabellen. Sie erhält die vorhandenen Nutzerkonten und übernimmt die bereits vorhandenen Texte einschließlich ihrer bisherigen Beitrags- und Kommentar-IDs. Die Startinhalte werden danach ausschließlich aus der Datenbank gelesen. Es gibt keinen Reset und keine automatische Neuerzeugung von Nutzern.
+
+Für die früheren Autorennamen ist keine Zugehörigkeit zu den bestehenden Konten belegt. Diese Namen bleiben daher mit leerer `author_id` erhalten und werden nicht automatisch gleichnamigen registrierten Nutzern zugeordnet. Neue Kommentare erhalten die tatsächliche Nutzer-ID. Die Erfassungszeit übernommener Inhalte ist der Zeitpunkt ihrer Migration; frühere relative Zeitangaben waren nicht gespeichert. Frühere vorgegebene Stimmzahlen werden durch die Summe tatsächlich gespeicherter Stimmen ersetzt. Kommentarzahlen werden gezählt, nicht übernommen.
+
+Schemaänderungen verwenden weiterhin versionierte Migrationen. Vorhandene SQL-Migrationen nach ihrer Anwendung nicht ändern; weitere Änderungen in einer neuen Migration festhalten.
+
+## Prüfstand
 
 ```bash
 pnpm lint
 pnpm exec tsc --noEmit
 ```
 
-Zusätzlich geprüft: PostgreSQL healthy, versionierte Migration und erneute Anwendung, Datenpersistenz nach Stoppen und Neustart, Registrierung und Servervalidierung, Nickname-Kollision bei anderer Groß-/Kleinschreibung, falsches Passwort, erfolgreicher Login, Session bei erneuten Requests mit demselben Cookie, Trennung anonymer und angemeldeter Requests, Logout sowie öffentliche Home-/Community-/Thread-Routen. Dabei wurden echte Server-Action-Formulare per HTTP und Serverlogs geprüft. Ein technisches Prüfkonto mit Präfix `AuthCheck_` wurde in der lokalen Datenbank belassen.
-
-Browserwerkzeuge und ein Browser waren nicht verfügbar. Klickabläufe, Browser-Neuladen, visuelle Formularzustände und Browserkonsole wurden daher nicht geprüft. Kein Build und keine neue Testsuite.
-
-In der Prüfumgebung waren die vorhandenen Compose-Verknüpfungen unter `/mnt/wsl` mit einem E/A-Fehler nicht ausführbar. Für Start und Stopp wurde dieselbe offizielle Compose-Version 5.6.1 mit verifizierter Prüfsumme vorübergehend in `/tmp` verwendet. Diese Umgebungsumgehung gehört nicht zur App; für die normalen pnpm-Datenbankbefehle muss `docker compose` in WSL funktionieren.
+Für den Ausbau um Profile, Votes und Kommentare liefen beide statischen Prüfungen erfolgreich durch. Die neue Migration wurde einmal zur Einrichtung angewendet. Es wurden kein Dev-Server, kein Browsercheck, keine Parallelitätsprüfung, kein Build und keine zusätzliche Testsuite ausgeführt. Frühere Laufzeitprüfungen der Authentifizierung belegen nicht das neue Verhalten. Die Migration wurde von PostgreSQL erfolgreich übernommen; neue Interaktionen sind in diesem Schritt nicht zur Laufzeit geprüft.

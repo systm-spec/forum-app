@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FeedFallback, SearchableFeed } from "@/components/feed";
 import { InfoPanel } from "@/components/info-panel";
-import { communities, posts } from "@/lib/demo-data";
+import { communities } from "@/lib/communities";
 
 const HomePage = ({ searchParams }: PageProps<"/">) => (
     <>
@@ -15,12 +15,12 @@ const HomePage = ({ searchParams }: PageProps<"/">) => (
           <p>Gedanken, Fragen und Entdeckungen aus allen Communitys.</p>
         </div>
         <Suspense fallback={<FeedFallback />}>
-          <SearchableFeed posts={posts} communities={communities} searchParams={searchParams} />
+          <SearchableFeed searchParams={searchParams} />
         </Suspense>
       </main>
       <aside className="right-column" aria-label="Über das Forum">
         <InfoPanel title="Willkommen im Forum" eyebrow="Über diesen Ort">
-          <p>Ein ruhiger Platz für Fragen, Erfahrungen und Ideen. Die Beiträge hier sind Beispieldaten für das erste UI-Grundgerüst.</p>
+          <p>Ein ruhiger Platz für Fragen, Erfahrungen und Ideen. Entdecke die Communitys und teile deine Gedanken in den Diskussionen.</p>
         </InfoPanel>
         <InfoPanel title="Communitys entdecken" eyebrow="Themenräume">
           <ul className="info-list">

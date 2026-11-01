@@ -16,7 +16,7 @@ Entwickle eine eigenständige Community- und Forum-Webapp mit Reddit-ähnlichen
 Mechaniken, eigener visueller Identität und sauber nachvollziehbarem Code.
 Das Projekt dient als Portfolio-Projekt und soll später nutzbar sein können.
 
-- Das erste UI-Grundgerüst ist umgesetzt. Entwickle auf diesem Stand weiter und ergänze fachliche Funktionen schrittweise.
+- Das gemeinsame UI und die grundlegenden Forum-Funktionen sind umgesetzt. Entwickle auf diesem Stand weiter und ergänze fachliche Funktionen schrittweise.
 - Setze die jeweils beauftragte Aufgabe vollständig um. Diese Datei ist kein Auftrag, sämtliche erwähnten Funktionen gleichzeitig zu bauen.
 - Erstelle Wireframes oder zusätzliche Designvorschauen nur auf ausdrücklichen Wunsch.
 - Halte die Architektur dem Umfang eines Forums angemessen: klare Zuständigkeiten, kurze nachvollziehbare Wege und wenige Abstraktionsebenen.
@@ -24,19 +24,15 @@ Das Projekt dient als Portfolio-Projekt und soll später nutzbar sein können.
 
 ## Aktueller Umsetzungsstand
 
-Stand nach der Integration von PostgreSQL und Nickname-Authentifizierung:
-
-- Das Next.js-Projekt ist initialisiert, die Starter-Inhalte sind entfernt, Prettier ist eingerichtet und das Repository liegt privat auf GitHub.
-- Homefeed, Community-Seiten und direkt aufrufbare Thread-Ansichten mit eingerückten Kommentaren sind umgesetzt.
-- Gemeinsame Beispieldaten, eine Suche im jeweiligen Feed und Nicht-gefunden-Seiten sind vorhanden.
-- Das Layout ist responsiv und durchgehend dunkel. Source Sans 3 ersetzt Geist.
-- `Forum` bleibt der vorläufige Name.
-- Registrierung, Login, Logout und Nickname im Header sind mit PostgreSQL und Auth.js implementiert. Eigene Beiträge, Antworten und echte Abstimmungen sind noch nicht verfügbar; die angezeigten Stimmzahlen sind Demodaten.
-- Laufzeitabhängige URL-Hooks, `params` und `searchParams` liegen unter Suspense-Grenzen mit deterministischen Fallbacks. Die statische Header- und Navigationsstruktur bleibt darstellbar; Suchziel und Suchtext folgen der URL. Cache Components, Partial Prefetching und deren Validierung bleiben aktiv.
-- Begrenzter Dev-Server-Check: Home, alle drei Communitys, alle vier Threads, Suchtreffer und leere Ergebnisse, unbekannte URLs sowie falsche Community-/Thread-Zuordnungen geprüft. Gerenderte Inhalte, Suchformular, aktive Navigation, Kommentarzahlen und Serverlogs wurden kontrolliert. Dynamische Nicht-gefunden-Fälle senden den gestreamten Next.js-404-Zustand mit `noindex`.
-- PostgreSQL 18 im lokalen Compose-Projekt ist healthy; die Drizzle-Migration wurde erfolgreich und erneut ohne zusätzliche Migration angewendet. Daten und Migrationshistorie blieben nach Stoppen und Neustart erhalten. Registrierung, Validierungsfehler, Nickname-Kollision unabhängig von Groß-/Kleinschreibung, falsches Passwort, Login, wiederholte Session-Abfragen, getrennte Nutzerkontexte und Logout wurden über echte Server-Action-Formulare per HTTP geprüft. Home, alle Communitys und Threads waren weiterhin ohne Rendering-Fehler öffentlich erreichbar.
-- Browserprüfungen einschließlich Klicknavigation, Neuladen, Zurück/Vorwärts und Browserkonsole waren mangels verfügbarer Browserwerkzeuge und Browser nicht möglich. Die defekte WSL-Compose-Verknüpfung wurde beim Prüflauf mit einer temporären offiziellen Compose-CLI umgangen; Einrichtungshinweise stehen in der README.
-- `pnpm lint` und `pnpm exec tsc --noEmit` liefen erfolgreich durch. Nach Codeänderungen sind die Prüfungen erneut auszuführen.
+- Homefeed, Communitys und Threads lesen Beiträge und Kommentare aus PostgreSQL. Die drei Themenräume sind zentral in `lib/communities.ts` definiert; die Suche bleibt über `q` teilbar.
+- Öffentliche Profile unter `/u/[nickname]` zeigen Nickname, Registrierungsdatum sowie zugeordnete Beiträge und Kommentare. Nicknames werden wie beim Login ohne Beachtung der Groß-/Kleinschreibung aufgelöst. Verknüpfte Autoren und der angemeldete Nutzer führen zu ihren Profilen.
+- Auth.js-Registrierung, Login, Logout und Kontoanzeige bleiben erhalten. Es gibt keine E-Mail-Daten oder Mailabläufe.
+- Persistente Up-/Downvotes für Beiträge und Kommentare: eindeutiger Nutzer-/Zielschlüssel, Werteprüfung und eine Transaktionssperre für konsistentes Umschalten/Zurücknehmen bei parallelen Requests. Die Anzeige berechnet Gesamtstand und eigene Stimme pro Anfrage aus der Datenbank.
+- Angemeldete Nutzer können Kommentare und Antworten veröffentlichen. Servervalidierung und zusammengesetzter Fremdschlüssel sichern die Zugehörigkeit zum selben Beitrag. Ein eindeutiger Übermittlungsschlüssel verhindert doppelte Speicherung bei wiederholten Requests; laufende Übermittlungen sperren weitere Klicks.
+- Die erfolgreich auf die vorhandene Datenbank angewendete Migration `0001_forum_content.sql` ergänzt die Inhaltstabellen und übernimmt bestehende Texte mit unveränderten IDs. Bereits vorhandene Nutzer werden nicht verändert. Übernommene Autorennamen ohne belegtes Nutzerkonto bleiben ohne Kontozuordnung; als Erfassungszeit gilt der Migrationszeitpunkt. Stimmzahlen und Kommentarzahlen werden aus tatsächlichen Datensätzen berechnet.
+- Das dunkle Design, Source Sans 3, Cache Components, Partial Prefetching und die Suspense-Grenzen bleiben erhalten. Alle neuen Daten- und Session-Zugriffe liegen hinter Suspense und sind pro Anfrage begrenzt. Es gibt keine global gecachten Nutzerzustände.
+- Eigene Beiträge erstellen, Bearbeiten, Löschen, Moderation und Profilbearbeitung sind nicht Teil des aktuellen Funktionsumfangs.
+- `pnpm lint` und `pnpm exec tsc --noEmit` liefen für diesen Schritt erfolgreich durch. Die Migration wurde einmal zur Einrichtung angewendet. Neue Interaktionen, parallele Requests und Browserabläufe wurden nicht zur Laufzeit geprüft; frühere Auth-/Rendering-Prüfungen sind kein Nachweis für die neuen Funktionen.
 
 Gleiche diesen Überblick vor neuen Aufgaben mit dem tatsächlichen Code ab und
 pflege ihn bei fachlichen Änderungen kurz mit. Er ist kein Auftrag, alle noch
@@ -80,7 +76,7 @@ fehlenden Funktionen gleichzeitig umzusetzen.
 - Prüfe vor der ersten Verwendung, ob Axios installiert ist; ergänze es bei Bedarf mit pnpm. Führe für diese Aufgabe allein keine künstlichen HTTP-Anfragen ein.
 - Bündele wiederkehrende API-Konfiguration und Requests bei tatsächlichem Bedarf in einer kleinen, typisierten API-Schicht. Nutze die Axios-Methoden direkt und vermeide eine zusätzliche generische Request-Abstraktion.
 - Verwende native `fetch`-Aufrufe nur bei einem konkreten technischen Grund, etwa einer benötigten Framework-Integration, und erläutere die Ausnahme kurz.
-- Auth.js-Abläufe verwenden dessen offizielle Funktionen `auth`, `signIn`, `signOut` und Server Actions. Diese bewusste Ausnahme von Axios ist in der README dokumentiert.
+- Auth.js-Abläufe verwenden dessen offizielle Funktionen `auth`, `signIn` und `signOut`. Schreibaktionen verwenden die vorhandenen Next.js Server Actions; deren Framework-Transport wird nicht durch eigene HTTP-Aufrufe ersetzt. Eigene HTTP-Anfragen verwenden weiterhin Axios.
 - Serverseitige Datenzugriffe dürfen direkt auf die jeweilige Datenquelle zugreifen. Ein direkter Datenbankzugriff benötigt keinen HTTP-Umweg über die eigene API.
 
 ## Next.js und Routing
@@ -121,7 +117,7 @@ fehlenden Funktionen gleichzeitig umzusetzen.
 - Wenn Abstimmung umgesetzt wird: Pro Nutzer und Ziel gibt es höchstens eine aktive Stimme; Wechsel und Zurücknehmen einer Stimme müssen konsistent funktionieren.
 - Wenn Ranking umgesetzt wird: Halte die Sortierung verständlich und deterministisch. Eine eigene einfache Hot-Sortierung genügt; dokumentiere ihre Bedeutung.
 - Chat, Awards, komplexe Empfehlungen und umfangreiche Moderationssysteme sind mögliche spätere Erweiterungen und werden erst bei entsprechendem Auftrag ergänzt.
-- Verwende für die UI-Entwicklung realistische, deterministische Beispieldaten. Halte diese klar von produktiver Persistenz getrennt und ersetze sie später an einer überschaubaren Stelle.
+- Beiträge, Kommentare und Stimmen werden persistent gespeichert. Zusätzliche Startinhalte nur gezielt und ohne Überschreiben vorhandener Daten ergänzen; keine erfundenen Stimmen oder unbelegten Zuordnungen zu Nutzerkonten.
 - Sichtbare Aktionen sollen zum jeweiligen Entwicklungsstand passen. Kennzeichne noch nicht verfügbare Aktionen eindeutig, statt einen erfolgreichen Vorgang vorzutäuschen.
 
 ## Daten und Sicherheit bei späteren Funktionen
@@ -130,7 +126,7 @@ fehlenden Funktionen gleichzeitig umzusetzen.
 - Trenne Identitätsprüfung von der Frage, welche Beiträge, Kommentare oder Communitys eine Person verändern darf.
 - Verwende etablierte Lösungen für Authentifizierung. Halte Secrets aus Git, Logs und dem Browser fern.
 - Rendere Nutzerinhalte sicher. Führe kein ungeprüftes HTML aus; sanitisiere erlaubte Rich-Text-Inhalte mit einer geeigneten Lösung.
-- Führe Datenbank- oder Auth-Infrastruktur erst ein, wenn die beauftragte Funktion sie benötigt. Eine reine UI-Demo gilt nicht als Nachweis für funktionierende Authentifizierung oder Persistenz.
+- Führe Datenbank- oder Auth-Infrastruktur erst ein, wenn die beauftragte Funktion sie benötigt. Eine reine Oberflächendarstellung gilt nicht als Nachweis für funktionierende Authentifizierung oder Persistenz.
 
 ## Prüfung und Zusammenarbeit
 

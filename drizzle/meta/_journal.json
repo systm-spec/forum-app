@@ -8,6 +8,13 @@
       "when": 1793536440905,
       "tag": "0000_users",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793548238118,
+      "tag": "0001_forum_content",
+      "breakpoints": true
     }
   ]
 }

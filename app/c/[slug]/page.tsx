@@ -2,19 +2,23 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { FeedFallback, SearchableFeed } from "@/components/feed";
 import { InfoPanel } from "@/components/info-panel";
-import { communities, posts } from "@/lib/demo-data";
+import { communities } from "@/lib/communities";
+import { getCommunityPostCount } from "@/lib/forum/queries";
 
 type CommunityPageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ q?: string | string[] }>;
 };
 
+const CommunityStatistics = async ({ slug }: { slug: string }) => {
+  const count = await getCommunityPostCount(slug);
+  return <p className="muted-note">{count} {count === 1 ? "Beitrag" : "Beiträge"}</p>;
+};
+
 const CommunityContent = async ({ params, searchParams }: CommunityPageProps) => {
   const { slug } = await params;
   const community = communities.find((item) => item.slug === slug);
   if (!community) notFound();
-
-  const communityPosts = posts.filter((post) => post.communitySlug === slug);
 
   return (
     <>
@@ -26,13 +30,13 @@ const CommunityContent = async ({ params, searchParams }: CommunityPageProps) =>
           <span className="community-path">c/{community.slug}</span>
         </div>
         <Suspense fallback={<FeedFallback />}>
-          <SearchableFeed posts={communityPosts} communities={communities} searchParams={searchParams} />
+          <SearchableFeed communitySlug={slug} searchParams={searchParams} />
         </Suspense>
       </main>
       <aside className="right-column" aria-label={`Über ${community.name}`}>
         <InfoPanel title={`Über ${community.name}`} eyebrow="Themenraum">
           <p>{community.description}</p>
-          <p className="muted-note">{communityPosts.length} Beiträge in dieser Demo</p>
+          <Suspense fallback={<p className="muted-note" role="status">Beiträge werden gezählt …</p>}><CommunityStatistics slug={slug} /></Suspense>
         </InfoPanel>
         <InfoPanel title="Im Umgang miteinander" eyebrow="Leitlinien">
           <ol className="rules-list">
