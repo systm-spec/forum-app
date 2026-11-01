@@ -158,8 +158,6 @@ pnpm exec tsc --noEmit
 
 Entstandene Fehler beheben. Standardmäßig keine zusätzliche Testsuite, keinen Build und keine weiteren Prüfabläufe ohne Auftrag ausführen. Bei Layoutänderungen Desktop, schmale Bildschirme, Header-Überlappungen und Tastaturbedienung berücksichtigen. Abschließend Änderungen, tatsächlich ausgeführte Prüfungen und Einschränkungen kurz berichten; Oberflächendarstellung allein belegt keine funktionierende Persistenz.
 
-Die installierte Next.js-Version kann bei `next dev` automatisch eine `AGENTS.md` mit Framework-Hinweisen neu erzeugen (`node_modules/next/dist/server/lib/generate-agent-files.js`). Die projektspezifischen Leitplanken stehen in dieser README.
-
 ## Offene Punkte und Prüfstand
 
 - Noch nicht implementiert: eigene Beiträge erstellen, Community-Beitritt, wählbare Feed-Sortierung, Bearbeiten/Löschen, Moderation, Profilbearbeitung und Passwort-Wiederherstellung. Chat, Awards und komplexe Empfehlungen sind mögliche spätere Erweiterungen.
