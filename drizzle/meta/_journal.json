@@ -15,6 +15,27 @@
       "when": 1793548238118,
       "tag": "0001_forum_content",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793561175327,
+      "tag": "0002_communities_posts_memberships",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793561652154,
+      "tag": "0003_create_communities",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793562941909,
+      "tag": "0004_roles_and_moderation",
+      "breakpoints": true
     }
   ]
 }

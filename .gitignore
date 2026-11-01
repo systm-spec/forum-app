@@ -11,6 +11,8 @@
 !.yarn/versions
 .side
 .side/*
+.skripts
+.skripts/*
 
 # testing
 /coverage

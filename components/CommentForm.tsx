@@ -43,16 +43,16 @@ export const CommentForm = ({ postId, parentId, canComment }: CommentFormProps) 
     });
   };
 
-  if (!canComment || loginRequired) return <p className="comment-login"><Link className="text-link" href="/login">Einloggen</Link>, um {parentId ? "zu antworten" : "einen Kommentar zu schreiben"}.</p>;
+  if (!canComment || loginRequired) return <p className="mb-6 text-muted"><Link className="m-0 inline-block text-sm font-semibold text-accent [overflow-wrap:anywhere]" href="/login">Einloggen</Link>, um {parentId ? "zu antworten" : "einen Kommentar zu schreiben"}.</p>;
 
   return (
-    <form className="comment-form" onSubmit={submit} aria-busy={pending}>
-      <label htmlFor={inputId}>{parentId ? "Deine Antwort" : "Dein Kommentar"}</label>
-      <textarea id={inputId} value={body} onChange={(event) => setBody(event.target.value)} rows={parentId ? 3 : 4} maxLength={10000} required disabled={pending} aria-describedby={`${inputId}-hint`} />
-      <span id={`${inputId}-hint`} className="field-hint">1–10.000 Zeichen. Bleib respektvoll und beim Thema.</span>
-      <button className="primary-link auth-submit" type="submit" disabled={pending || !body.trim()}>{pending ? "Wird veröffentlicht …" : (parentId ? "Antwort veröffentlichen" : "Kommentar veröffentlichen")}</button>
-      {error && <p className="mutation-error" role="alert">{error}</p>}
-      {message && <p className="mutation-status" role="status">{message}</p>}
+    <form className="mb-6 grid min-w-0 gap-3 rounded-[10px] border border-line bg-surface p-4" onSubmit={submit} aria-busy={pending}>
+      <label className="font-semibold" htmlFor={inputId}>{parentId ? "Deine Antwort" : "Dein Kommentar"}</label>
+      <textarea className="min-h-[90px] max-h-[500px] w-full min-w-0 resize-y rounded-lg border border-line bg-bg p-3 text-text disabled:text-muted" id={inputId} value={body} onChange={(event) => setBody(event.target.value)} rows={parentId ? 3 : 4} maxLength={10000} required disabled={pending} aria-describedby={`${inputId}-hint`} />
+      <span id={`${inputId}-hint`} className="m-0 text-sm text-muted">1–10.000 Zeichen. Bleib respektvoll und beim Thema.</span>
+      <button className="mt-3 inline-block rounded-lg bg-accent px-[15px] py-[9px] font-bold text-bg hover:bg-[#a6b2ff] hover:text-bg m-0 justify-self-start border-0 cursor-pointer disabled:cursor-wait disabled:bg-accent-wash disabled:text-muted" type="submit" disabled={pending || !body.trim()}>{pending ? "Wird veröffentlicht …" : (parentId ? "Antwort veröffentlichen" : "Kommentar veröffentlichen")}</button>
+      {error && <p className="m-0 max-w-[48ch] text-sm text-danger [overflow-wrap:anywhere]" role="alert">{error}</p>}
+      {message && <p className="m-0 text-xs text-muted [overflow-wrap:anywhere]" role="status">{message}</p>}
     </form>
   );
 };

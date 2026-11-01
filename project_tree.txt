@@ -1,0 +1,70 @@
+app
+├── api
+│   └── auth
+│       └── [...nextauth]
+│           └── route.ts
+├── c
+│   └── [slug]
+│       ├── page.tsx
+│       └── post
+│           └── [id]
+│               └── page.tsx
+├── error.tsx
+├── favicon.ico
+├── globals.css
+├── layout.tsx
+├── login
+│   └── page.tsx
+├── not-found.tsx
+├── page.tsx
+├── register
+│   └── page.tsx
+└── u
+    └── [nickname]
+        ├── not-found.tsx
+        └── page.tsx
+components
+├── CommentForm.tsx
+├── CommentTree.tsx
+├── Feed.tsx
+├── Navigation.tsx
+├── NavigationLinks.tsx
+├── SearchForm.tsx
+├── UI
+│   ├── AuthorLink.tsx
+│   ├── Header.tsx
+│   ├── InfoPanel.tsx
+│   ├── PostCard.tsx
+│   └── VoteControls.tsx
+└── auth
+    ├── AccountControls.tsx
+    ├── AuthForm.tsx
+    └── LogoutForm.tsx
+drizzle
+├── 0000_users.sql
+├── 0001_forum_content.sql
+└── meta
+    ├── 0000_snapshot.json
+    ├── 0001_snapshot.json
+    └── _journal.json
+lib
+├── auth
+│   ├── actions.ts
+│   ├── password.ts
+│   ├── session.ts
+│   └── validation.ts
+├── communities.ts
+├── db
+│   ├── config.ts
+│   ├── index.ts
+│   └── schema.ts
+├── format.ts
+├── forum
+│   ├── actions.ts
+│   ├── queries.ts
+│   └── types.ts
+└── search.ts
+types
+└── next-auth.d.ts
+
+22 directories, 46 files

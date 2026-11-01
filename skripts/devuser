@@ -1,0 +1,29 @@
+node --env-file=.env.local --input-type=module <<'JS'
+import pg from "pg";
+import { hash } from "@node-rs/argon2";
+
+const client = new pg.Client({ connectionTimeoutMillis: 5000 });
+
+try {
+  const passwordHash = await hash("admin", {
+    memoryCost: 19456,
+    timeCost: 2,
+    parallelism: 1,
+  });
+
+  await client.connect();
+  await client.query(`
+    INSERT INTO users (nickname, normalized_nickname, password_hash)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (normalized_nickname)
+    DO UPDATE SET password_hash = EXCLUDED.password_hash
+  `, ["dev", "dev", passwordHash]);
+
+  console.log("Forum-Nutzer dev mit Passwort admin gespeichert.");
+} catch (error) {
+  console.error(error.message);
+  process.exitCode = 1;
+} finally {
+  await client.end();
+}
+JS

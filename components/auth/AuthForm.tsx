@@ -14,11 +14,12 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
   const errors = state.fieldErrors;
 
   return (
-    <form className="auth-form" action={action} aria-busy={pending}>
-      {state.message && <p className="form-error" role="alert">{state.message}</p>}
-      <div className="form-field">
-        <label htmlFor="nickname">Nickname</label>
+    <form className="grid gap-6" action={action} aria-busy={pending}>
+      {state.message && <p className="mb-0 rounded-lg border border-current p-3 text-[15px] text-danger [overflow-wrap:anywhere]" role="alert">{state.message}</p>}
+      <div className="grid gap-2">
+        <label className="font-semibold" htmlFor="nickname">Nickname</label>
         <input
+          className="w-full min-w-0 rounded-lg border border-line bg-bg px-3 py-2.5 text-text aria-invalid:border-danger"
           id="nickname"
           name="nickname"
           autoComplete="username"
@@ -32,12 +33,13 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           aria-invalid={Boolean(errors?.nickname)}
           aria-describedby={errors?.nickname ? "nickname-error nickname-hint" : "nickname-hint"}
         />
-        <p id="nickname-hint" className="field-hint">3–24 Zeichen: A–Z, Zahlen und Unterstriche. Beginne mit einem Buchstaben. Groß- und Kleinschreibung unterscheiden keine Konten.</p>
-        {errors?.nickname && <p id="nickname-error" className="field-error" role="alert">{errors.nickname}</p>}
+        <p id="nickname-hint" className="m-0 text-sm text-muted">3–24 Zeichen: A–Z, Zahlen und Unterstriche. Beginne mit einem Buchstaben. Groß- und Kleinschreibung unterscheiden keine Konten.</p>
+        {errors?.nickname && <p id="nickname-error" className="m-0 text-sm text-danger" role="alert">{errors.nickname}</p>}
       </div>
-      <div className="form-field">
-        <label htmlFor="password">Passwort</label>
+      <div className="grid gap-2">
+        <label className="font-semibold" htmlFor="password">Passwort</label>
         <input
+          className="w-full min-w-0 rounded-lg border border-line bg-bg px-3 py-2.5 text-text aria-invalid:border-danger"
           id="password"
           name="password"
           type="password"
@@ -48,13 +50,14 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           aria-invalid={Boolean(errors?.password)}
           aria-describedby={errors?.password ? "password-error password-hint" : "password-hint"}
         />
-        <p id="password-hint" className="field-hint">12–128 Zeichen. Leerzeichen sind erlaubt.</p>
-        {errors?.password && <p id="password-error" className="field-error" role="alert">{errors.password}</p>}
+        <p id="password-hint" className="m-0 text-sm text-muted">12–128 Zeichen. Leerzeichen sind erlaubt.</p>
+        {errors?.password && <p id="password-error" className="m-0 text-sm text-danger" role="alert">{errors.password}</p>}
       </div>
       {registering && (
-        <div className="form-field">
-          <label htmlFor="password-confirmation">Passwort bestätigen</label>
+        <div className="grid gap-2">
+          <label className="font-semibold" htmlFor="password-confirmation">Passwort bestätigen</label>
           <input
+            className="w-full min-w-0 rounded-lg border border-line bg-bg px-3 py-2.5 text-text aria-invalid:border-danger"
             id="password-confirmation"
             name="passwordConfirmation"
             type="password"
@@ -65,15 +68,15 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
             aria-invalid={Boolean(errors?.passwordConfirmation)}
             aria-describedby={errors?.passwordConfirmation ? "password-confirmation-error" : undefined}
           />
-          {errors?.passwordConfirmation && <p id="password-confirmation-error" className="field-error" role="alert">{errors.passwordConfirmation}</p>}
+          {errors?.passwordConfirmation && <p id="password-confirmation-error" className="m-0 text-sm text-danger" role="alert">{errors.passwordConfirmation}</p>}
         </div>
       )}
-      <button className="primary-link auth-submit" type="submit" disabled={pending}>
+      <button className="mt-3 inline-block rounded-lg bg-accent px-[15px] py-[9px] font-bold text-bg hover:bg-[#a6b2ff] hover:text-bg m-0 justify-self-start border-0 cursor-pointer disabled:cursor-wait disabled:bg-accent-wash disabled:text-muted" type="submit" disabled={pending}>
         {pending ? (registering ? "Konto wird erstellt …" : "Anmeldung läuft …") : (registering ? "Konto erstellen" : "Einloggen")}
       </button>
-      <p className="auth-switch">
+      <p className="m-0 text-sm text-muted">
         {registering ? "Du hast schon ein Konto? " : "Noch kein Konto? "}
-        <Link className="text-link" href={registering ? "/login" : "/register"}>{registering ? "Einloggen" : "Registrieren"}</Link>
+        <Link className="mt-0 inline-block text-sm font-semibold text-accent [overflow-wrap:anywhere]" href={registering ? "/login" : "/register"}>{registering ? "Einloggen" : "Registrieren"}</Link>
       </p>
     </form>
   );
