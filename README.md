@@ -1,37 +1,86 @@
 # Forum
 
-Community- und Forum-App mit Next.js App Router, React und TypeScript. „Forum“ ist der vorläufige Name. Nutzerkonten, Beiträge, Kommentare und Stimmen liegen in PostgreSQL.
+Eigenständige, Reddit-inspirierte Community- und Forum-App als Portfolio-Projekt mit eigener visueller Identität. „Forum“ ist der vorläufige Name. 
 
-## Voraussetzungen
+## Vorhandener Funktionsumfang
 
-- Node.js 22 (geprüft mit 22.12.0), pnpm 10.15.0
-- Docker Desktop mit erreichbarer Docker-CLI und Compose in der verwendeten WSL-Distribution
-- Freier lokaler PostgreSQL-Port, standardmäßig 5432
+| Bereich | Im Code vorhanden |
+| --- | --- |
+| Öffentliche Ansichten | Homefeed `/`, Communitys `/c/[slug]`, Threads `/c/[slug]/post/[id]` und Profile `/u/[nickname]` |
+| Feeds und Suche | Textbeiträge, Suche nach Titel, Inhalt und Autor über den URL-Parameter `q`; Sortierung nach Erfassungszeit absteigend, bei Gleichstand nach ID |
+| Nutzerkonten | Registrierung `/register`, Login `/login`, Logout und Konto-/Profillink im Header |
+| Profile | Nickname, Registrierungsdatum, zugeordnete Beiträge und Kommentare mit Inhaltslinks; Leer- und Nicht-gefunden-Zustände |
+| Kommentare | Kommentare und verschachtelte Antworten für angemeldete Nutzer, Autorenlinks, Zeitangaben und tatsächliche Kommentarzahlen |
+| Votes | Persistente Up-/Downvotes für Beiträge und Kommentare, eigene Stimme und Gesamtstand; erneuter gleicher Vote entfernt die Stimme, Gegenrichtung wechselt sie |
+| Rückmeldungen | Lade-, Leer-, Fehler- und Nicht-gefunden-Ansichten sowie Statusanzeigen bei Schreibaktionen; Gäste erhalten Login-Links |
 
-Prüfe den Docker-Zugriff aus WSL:
+Communitys enthalten Beiträge; ein Beitrag mit seiner Diskussion bildet einen Thread. Die drei Themenräume Werkstatt, Alltag und Lesezeichen stehen in `lib/communities.ts`. Inhalte und Nutzerkonten werden aus PostgreSQL gelesen. Persönliche Stimmen werden pro Anfrage ermittelt und nicht global zwischen Nutzern gecacht.
 
-```bash
-docker compose version
-docker info
+## Stack und Struktur
+
+Maßgeblich sind `package.json` und `pnpm-lock.yaml`; bestehende Versionen bei fachlichen Änderungen beibehalten.
+
+| Bestandteil | Repository-Stand |
+| --- | --- |
+| Framework | Next.js 16.4.3, App Router, Cache Components und Partial Prefetching |
+| UI und Sprache | React / React DOM 19.3.0, TypeScript mit strenger Typprüfung |
+| Datenbank | PostgreSQL 18, Image `postgres:18-bookworm`, Docker Compose |
+| Datenzugriff | Drizzle ORM 0.45.4, Drizzle Kit 0.31.11, `pg` 8.23.1 |
+| Authentifizierung | Auth.js `next-auth` 5.0.0-beta.32, Credentials Provider, JWT-Sessions; Beta-Status beachten |
+| Passwörter | Argon2id über `@node-rs/argon2` 2.2.2 |
+| Gestaltung | CSS mit Tailwind CSS 4, Source Sans 3 über `next/font/google`, `react-icons` |
+| Weitere Werkzeuge | Axios, ESLint mit Next.js-/TypeScript-Regeln; Prettier-Konfiguration vorhanden |
+
+```text
+app/                  Seiten, gemeinsames Layout, Fehlerseiten und Auth.js-Route
+components/           Gemeinsame UI, Kommentar-/Vote-Steuerungen und Auth-Formulare
+lib/auth/             Validierung, Passwortlogik, Sessions und Auth-Aktionen
+lib/db/               Drizzle-Schema, Verbindungskonfiguration und wiederverwendbarer Pool
+lib/forum/            Inhaltsabfragen, Schreibaktionen und Ansichtstypen
+lib/communities.ts    Themenräume
+lib/search.ts         Feed-Filter und Suchparameter
+lib/format.ts         Datumsformatierung und Inhalts-/Profilpfade
+auth.ts               Auth.js-Konfiguration
+types/next-auth.d.ts   Session-/JWT-Typen
+drizzle/              SQL-Migrationen, Journal und Schema-Snapshots
+compose.yaml          Ausschließlich PostgreSQL
+drizzle.config.ts     Schema-, Migrations- und Verbindungskonfiguration
+app/globals.css       Gemeinsame Styles und Design-Tokens
 ```
 
-Nur PostgreSQL läuft im Container. Next.js und die Migrationsbefehle laufen lokal in WSL.
+## Lokale Einrichtung
 
-## Lokale Konfiguration
+### Voraussetzungen
 
-Falls noch keine `.env.local` vorhanden ist:
+- Node.js 22 für die bisherige WSL-Entwicklungsumgebung; im Repository liegt keine `.nvmrc` oder `.node-version`.
+- pnpm **10.15.0**, festgelegt über `packageManager`.
+- Docker Desktop mit funktionierendem Docker-/Compose-Zugriff aus WSL und freiem lokalen Datenbankport.
 
-```bash
-cp -n .env.example .env.local
+Nur PostgreSQL läuft im Container. Next.js und Drizzle-Befehle laufen lokal in WSL.
+
+### Umgebungsvariablen
+
+Eine vorhandene `.env.local` beibehalten. Für eine neue Installation diese Datei im Projektverzeichnis manuell anlegen. **`.env.example` fehlt derzeit**, obwohl die bisherige Dokumentation und eine Fehlermeldung darauf verweisen; ein Kopierbefehl dafür wäre nicht ausführbar.
+
+Die benötigten Namen folgen aus `lib/db/config.ts`, `compose.yaml` und `auth.ts`:
+
+```dotenv
+PGHOST=127.0.0.1
+PGPORT=5432
+PGDATABASE=<lokaler_datenbankname>
+PGUSER=<lokaler_datenbanknutzer>
+PGPASSWORD=<zufaelliges_datenbankpasswort>
+AUTH_SECRET=<separater_zufaelliger_auth_schluessel>
+AUTH_URL=http://localhost:3000
 ```
 
-Ersetze `PGPASSWORD` und `AUTH_SECRET` durch **zwei unabhängig erzeugte** Zufallswerte, beispielsweise jeweils mit `openssl rand -hex 32`. Vorhandene lokale Konfiguration und Secrets beibehalten. `.env.local` ist ignoriert; `.env.example` enthält nur Platzhalter.
+Die Angaben in spitzen Klammern sind zu ersetzen und keine Zugangsdaten. Datenbankname und Nutzer für eine neue Datenbank selbst wählen; bei einem bestehenden Volume dessen vorhandene Werte verwenden. `PGPASSWORD` und `AUTH_SECRET` unabhängig erzeugen, beispielsweise jeweils mit `openssl rand -hex 32`. Keine echten Werte in Git, Logs oder Browsercode übernehmen.
 
-Compose erhält `.env.local` explizit über die pnpm-Skripte. Next.js und Drizzle laden dieselbe Datei mit dem Next.js-Environment-Loader. `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER` und `PGPASSWORD` konfigurieren den lokalen Datenbankzugriff; dieselben Zugangsdaten initialisieren den Container. Es gibt keine zweite, separat zu pflegende Datenbank-URL.
+Compose lädt `.env.local` über die vorhandenen Skripte. Next.js lädt sie automatisch, Drizzle über `@next/env`. Die `PG*`-Werte konfigurieren den Pool; Compose verwendet dieselben Datenbank-, Nutzer- und Passwortwerte zur Initialisierung. Es gibt keine zusätzliche Datenbank-URL. `AUTH_URL` muss zum verwendeten App-Ursprung passen. Ein Wechsel von `AUTH_SECRET` macht bestehende JWT-Sessions ungültig.
 
-`AUTH_URL=http://localhost:3000` muss dem verwendeten App-Ursprung entsprechen. `AUTH_SECRET` verschlüsselt die Auth.js-JWTs. Eine Änderung dieses Secrets macht bestehende Sessions ungültig. Keine dieser Variablen trägt das Präfix `NEXT_PUBLIC_`.
+`.env.local` ist durch `.gitignore` ausgeschlossen. Keine dieser Variablen soll als `NEXT_PUBLIC_*` veröffentlicht werden.
 
-## Starten und stoppen
+### Installation und Start
 
 ```bash
 pnpm install --frozen-lockfile
@@ -40,79 +89,81 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Die App ist unter [http://localhost:3000](http://localhost:3000) erreichbar. `db:start` wartet auf den PostgreSQL-Healthcheck. `db:migrate` wendet nur noch nicht ausgeführte Migrationen an.
+Danach: [http://localhost:3000](http://localhost:3000). Bei Docker-Problemen zuerst `docker compose version` und `docker info` aus WSL prüfen.
 
-```bash
-pnpm db:stop
-```
+| Skript | Wirkung laut `package.json` |
+| --- | --- |
+| `pnpm dev` | Startet `next dev` |
+| `pnpm db:start` | Startet PostgreSQL mit `docker compose --env-file .env.local up -d --wait postgres` und wartet auf den Healthcheck |
+| `pnpm db:stop` | Stoppt nur den PostgreSQL-Service; löscht weder Container noch Volume |
+| `pnpm db:generate --name=beschreibung` | Erzeugt eine Drizzle-Migration aus Schemaänderungen |
+| `pnpm db:migrate` | Wendet ausstehende versionierte Migrationen an |
 
-Dieser Befehl stoppt ausschließlich PostgreSQL im Compose-Projekt. Container und Volume bleiben erhalten. PostgreSQL 18 verwendet das benannte Volume `forum-app_postgres_data` unter `/var/lib/postgresql`; die Daten liegen im Image versionsspezifisch unter `/var/lib/postgresql/18/docker`. Der veröffentlichte Port bindet ausschließlich an `127.0.0.1`. Der Pool verwendet für diese lokale Verbindung kein TLS.
+PostgreSQL bindet ausschließlich an `127.0.0.1:${PGPORT}`, standardmäßig Port 5432. Das benannte Volume `forum-app_postgres_data` liegt im Container unter `/var/lib/postgresql`. Die lokale Pool-Konfiguration verwendet kein TLS. Zugangsdaten werden bei der ersten Initialisierung des Volumes gesetzt; spätere Änderungen der Umgebungswerte ändern vorhandene Datenbankkonten nicht automatisch. Bestehende Daten und Volumes erhalten, Hauptversionswechsel separat migrieren.
 
-Die Container-Zugangsdaten werden bei der ersten Initialisierung des Volumes gesetzt. Änderungen an `PGUSER`, `PGDATABASE` oder `PGPASSWORD` ändern keine vorhandenen Datenbankkonten automatisch. Bestehende Daten und Volumes erhalten; Hauptversionswechsel separat migrieren.
+## Datenmodell und Migrationen
 
-## Schema und Migrationen
+`lib/db/schema.ts` definiert `users`, `posts`, `comments`, `post_votes` und `comment_votes`. `lib/db/index.ts` hält den serverseitigen Pool auch bei Hot Reload wiederverwendbar.
 
-Das Datenmodell steht in `lib/db/schema.ts`. Die SQL-Migrationen einschließlich Drizzle-Metadaten liegen versioniert in `drizzle/`. Nach einer Schemaänderung:
+- `0000_users.sql`: Nutzer mit UUID, Nickname, eindeutigem normalisiertem Nickname, Passwort-Hash und Erstellungszeitpunkt.
+- `0001_forum_content.sql`: Inhaltstabellen, Fremdschlüssel und Vote-Bedingungen; übernimmt die vorhandenen Texte mit unveränderten Beitrags- und Kommentar-IDs.
+- Früher übernommene Autorennamen ohne belegtes Konto behalten eine leere `author_id`. Sie werden weder gleichnamigen Konten zugeordnet noch als neue Nutzer erzeugt. Ihre Erfassungszeit ist der Migrationszeitpunkt. Neue Kommentare erhalten die tatsächliche Nutzer-ID.
+- Zusammengesetzte Vote-Primärschlüssel erlauben höchstens eine Stimme je Nutzer/Ziel; Wertebedingungen erlauben nur −1 oder +1. Keine Stimme entspricht einer fehlenden Zeile. Transaktionssperren serialisieren Umschalten und Zurücknehmen.
+- Kommentare werden serverseitig auf 1–10.000 Zeichen nach äußerem Trimmen geprüft. Ein zusammengesetzter Fremdschlüssel sichert denselben Beitrag für Elternkommentar und Antwort. Ein eindeutiger Übermittlungsschlüssel pro Autor verhindert doppelte Speicherung bei Wiederholungen.
 
-```bash
-pnpm db:generate --name=beschreibung_der_aenderung
-pnpm db:migrate
-```
+Nach einer Schemaänderung `pnpm db:generate --name=beschreibung` ausführen, die SQL-Migration prüfen und mit `pnpm db:migrate` anwenden. SQL-Dateien, Journal und Snapshots gemeinsam versionieren; angewendete Migrationen stehen in `drizzle.__drizzle_migrations`. Bereits angewendete Migrationen nicht ändern; weitere Änderungen erhalten eine neue Migration. Kein Schema-Push oder Datenbankreset als Ersatz. Zähler aus tatsächlichen Datensätzen berechnen und keine Stimmen oder Kontozuordnungen erfinden.
 
-Die erzeugten SQL-Dateien und Metadaten gemeinsam mit der Schemaänderung versionieren. Ein Schema-Push ist nicht vorgesehen. Migrationen werden in `drizzle.__drizzle_migrations` protokolliert. `lib/db/index.ts` stellt einen serverseitigen, auch bei Hot Reload wiederverwendeten Verbindungspool bereit.
+## Login und Registrierung
 
-## Nickname und Authentifizierung
+Es werden ausschließlich Nickname und Passwort verwendet, ohne E-Mail-Feld, Ersatzadressen oder Mailabläufe. Die Registrierung verlangt eine Passwortbestätigung und führt anschließend zur Login-Seite. Es gibt keine dokumentierten Standardzugänge; ein eigenes Konto wird über `/register` erstellt.
 
-- Registrierung unter `/register`, Login unter `/login`, Nickname und Logout im Header
-- Nicknames: 3–24 ASCII-Zeichen, erster Buchstabe A–Z, danach auch Zahlen und Unterstriche
-- Rand-Leerzeichen werden entfernt. Groß-/Kleinschreibung wird für die Eindeutigkeit ignoriert; PostgreSQL erzwingt den eindeutigen normalisierten Nickname.
-- Passwörter: 12–128 Zeichen, ohne Trimmen; Registrierung erfordert eine übereinstimmende Bestätigung
-- Argon2id mit `@node-rs/argon2`, 19 MiB Speicher, zwei Durchläufen, Parallelität 1 und zufälligem Salt der Bibliothek
-- Nach erfolgreicher Registrierung folgt die Login-Seite. Auth.js prüft Credentials gegen die eigene Drizzle-Nutzertabelle und verwaltet verschlüsselte JWT-Sessions sowie Cookies ohne Datenbankadapter.
-- Die sichere Nutzer-ID ist die PostgreSQL-UUID; JWT und Session enthalten als Nutzerdaten ausschließlich ID und Nickname. Passwort-Hashes verlassen die serverseitigen Module nicht.
-- Sessions gelten sieben Tage. `getCurrentUser()` in `lib/auth/session.ts` ermittelt sie pro Anfrage ohne globalen Nutzercache. Eine Suspense-Grenze im Header hält das statische Layout darstellbar. `connection()` begrenzt auch die internen Auth.js-Zufallswerte auf echte Anfragen.
+Nicknames haben 3–24 ASCII-Zeichen: erster Buchstabe A–Z, danach auch Zahlen und Unterstriche. Äußere Leerzeichen werden entfernt; Groß-/Kleinschreibung unterscheidet keine Konten. PostgreSQL erzwingt die Eindeutigkeit.
 
-Es werden keine E-Mail-Daten erfasst oder gespeichert. Eine Passwort-Wiederherstellung ist derzeit nicht verfügbar.
+Servervalidierung und HTML-Felder akzeptieren Passwörter mit **5–128 Zeichen**, Passwörter werden nicht getrimmt. Die Speicherung verwendet Argon2id mit 19 MiB Speicher, zwei Durchläufen und Parallelität 1.
 
-Die App verwendet die offiziellen serverseitigen Auth.js-Funktionen `signIn`, `signOut` und `auth` sowie Next.js Server Actions. Diese Bibliotheksabläufe sind die beabsichtigte Ausnahme von der Axios-Präferenz, damit Auth.js seine Cookies und Auth-Protokolle selbst verwaltet. Eigene HTTP-Aufrufe verwenden weiterhin Axios; der PostgreSQL-Zugriff erfolgt direkt.
+Auth.js prüft Credentials gegen die eigene Drizzle-Nutzertabelle und verwaltet JWTs und Auth-Cookies ohne Datenbankadapter. Die Session gilt sieben Tage; ID und Nickname sind die einzigen nutzerbezogenen JWT-/Session-Daten. Hashes und vertrauliche Konfiguration bleiben serverseitig. `getCurrentUser()` ermittelt die Sitzung pro Anfrage ohne globalen Nutzercache; `connection()` begrenzt auch interne Auth.js-Zufallswerte auf echte Anfragen.
 
-## Versionen und Kompatibilität
+## Entwicklungsleitplanken
 
-Next.js **16.4.3** und React **19.3.0** bleiben unverändert. Auth.js wird entsprechend seiner [offiziellen Next.js-Installation](https://authjs.dev/getting-started/installation) als **next-auth 5.0.0-beta.32** verwendet; seine veröffentlichten Peer-Abhängigkeiten unterstützen Next.js 16 und React 19 ausdrücklich. Der Beta-Status ist eine bewusste Entscheidung für diese Integration, keine Zusage einer stabilen v5-Veröffentlichung.
+### Umfang und Code
 
-Drizzle ORM **0.45.4** und Drizzle Kit **0.31.11** verwenden den [offiziell unterstützten node-postgres-Treiber](https://orm.drizzle.team/docs/get-started-postgresql) **pg 8.23.1**. Die Abhängigkeiten sind über pnpm festgehalten. Das [offizielle PostgreSQL-18-Image](https://hub.docker.com/_/postgres) bestimmt den verwendeten Volume-Pfad. Source Sans 3, dunkles Design, Cache Components und Partial Prefetching bleiben erhalten.
+- Nur den beauftragten Umfang umsetzen, vorhandene Änderungen und Inhalte erhalten. Kleine reversible Entscheidungen selbst treffen; wesentliche Produktentscheidungen gezielt klären. Wireframes oder separate Designvorschauen nur auf ausdrücklichen Wunsch.
+- Aktuelle Next.js-/React-Versionen und kompatible Abhängigkeiten beibehalten. Versionswechsel als eigene Wartungsaufgabe anhand offizieller Dokumentation und Paketmetadaten prüfen. pnpm und Lockdatei pflegen; zusätzliche Bibliotheken nur für einen konkreten Bedarf.
+- Vor Änderungen Dateien, Skripte und Konventionen lesen. Bei versionsabhängigen Next.js-APIs die mitinstallierten Anleitungen unter `node_modules/next/dist/docs/` lesen und Deprecations beachten.
+- Benannte Exporte und Arrow Functions bevorzugen: `export const Component = (...) => ...`. Erforderliche Framework-Exporte beibehalten, etwa `const Page = (...) => ...; export default Page;`.
+- Komponenten nach klaren UI-Aufgaben schneiden und gemeinsam gebrauchte Bausteine über Props und Komposition wiederverwenden. Feature-interne Hilfen lokal halten. Kurze Wege und wenige Abstraktionsebenen; keine unnötige generische API-Schicht.
+- Explizite Props-Typen, verständliche englische Bezeichner und stabile IDs als React-Keys verwenden. Unnötiges `any` und kopierte Geschäftslogik vermeiden. Lokalen State bevorzugen; Custom Hooks für wiederkehrende zustandsbehaftete Logik. Gründe und nicht offensichtliche Zusammenhänge kommentieren. Auf Deutsch klar und konkret kommunizieren.
 
-## Forum-Funktionen
+### Daten, HTTP und Rendering
 
-Home (`/`), Communitys (`/c/[slug]`), Threads (`/c/[slug]/post/[id]`) und Profile (`/u/[nickname]`) sind öffentlich lesbar. Die Themenräume stehen in `lib/communities.ts`. Die Suche filtert Titel, Text und Autor des jeweiligen Feeds über `q` in der URL.
+- Server Components für geeignete Darstellung und Datenzugriffe nutzen; Client Components auf Interaktion, lokalen State und Browser-APIs begrenzen. Vertrauliche Logik mit `server-only` vom Client fernhalten.
+- Auth.js über `auth`, `signIn` und `signOut` verwenden. Schreibaktionen nutzen Next.js Server Actions; deren Framework-Transport bleibt erhalten. Für eigene HTTP-Anfragen das vorhandene Axios verwenden. Native `fetch`-Ausnahmen technisch begründen; direkte Datenbankzugriffe brauchen keinen eigenen HTTP-Endpunkt.
+- Eingaben an der Servergrenze validieren und Schreibrechte serverseitig prüfen. Identitätsprüfung ersetzt keine Berechtigungsprüfung. Nutzerinhalte sicher als Text rendern; erlaubtes Rich Text/HTML erst mit geeigneter Sanitization ergänzen.
+- Cache Components und Partial Prefetching erhalten. URL-Hooks sowie `params`, `searchParams` und Session-Zugriffe unter passende Suspense-Grenzen legen; die Grenze muss oberhalb des tatsächlichen Zugriffs liegen. Deterministische Fallbacks und passende Lade-, Leer-, Fehler- und Nicht-gefunden-Zustände vorsehen. Keine globalen Nutzerzustände cachen.
+- Next.js-Links und direkt erreichbare Detailrouten verwenden. Teilbare Suche, Filter und Sortierung nach Möglichkeit in der URL halten. Mutationen aktualisieren betroffene Ansichten; laufende Requests und Fehler verständlich darstellen.
 
-Profile zeigen ausschließlich Nickname, Registrierungsdatum und die dem Nutzer zugeordneten Beiträge und Kommentare. Autoren mit Nutzerkonto sowie der angemeldete Nutzer im Header sind verlinkt. Kommentare im Profil führen direkt zum Kommentaranker im jeweiligen Thread. Unbekannte Nutzer und Profile ohne Inhalte haben eigene Zustände.
+### Design und Barrierefreiheit
 
-Angemeldete Nutzer können Beiträge und Kommentare up- oder downvoten. Derselbe Pfeil nimmt eine bestehende Stimme zurück; der Gegenpfeil wechselt die Richtung. Zusammengesetzte Primärschlüssel und Datenbankbedingungen erlauben nur eine Stimme pro Nutzer/Ziel mit dem Wert −1 oder +1. Keine Stimme wird als fehlende Zeile gespeichert. Eine PostgreSQL-Transaktionssperre pro Nutzer/Ziel serialisiert die Umschaltung auch bei parallelen Requests. Gesamtstand und eigene Stimme stammen aus derselben Leseabfrage. Während der Übermittlung sind beide Pfeile gesperrt; nach einem unklaren Fehler wird der aktuelle Stand neu geladen, statt die Umschaltung automatisch zu wiederholen.
+- Ausschließlich dunkles, ruhiges Design: kein Hellmodus oder Theme-Umschalter. Hintergrund `#181B23`, Oberflächen `#222732`, sparsamer Akzent `#8C9DFF`. Farben, Abstände, Radien und Typografie zentral in `app/globals.css` pflegen; auch sekundäre und deaktivierte Inhalte lesbar halten.
+- Source Sans 3 zentral über `next/font/google` und die vorhandene Outline-Familie von `react-icons` mit konsistenten Größen und Strichstärken verwenden. Reine Icon-Aktionen zugänglich beschriften, dekorative Icons kennzeichnen.
+- Fixierten Header mit Suche und Kontozugang berücksichtigen, auch bei Fokus und Sprungzielen. Desktop mit drei Spalten und breiterem Hauptinhalt; Gesamt-/Textbreite begrenzen. Der goldene Schnitt ist Orientierung, Lesbarkeit und sinnvolle Seitenleistenbreiten bestimmen die Proportionen. Auf schmalen Bildschirmen Seitenleisten umordnen und wichtige Funktionen erreichbar halten.
+- Semantische Elemente, echte Links/Buttons, beschriftete Eingaben, sichtbaren Fokus und Tastaturbedienung verwenden. Zustände nicht allein durch Farbe vermitteln. Lange Inhalte und tiefe Kommentarzweige dürfen keinen horizontalen Overflow erzeugen. Sichtbare Aktionen müssen zum Entwicklungsstand passen.
 
-Kommentare und Antworten enthalten 1–10.000 Zeichen nach dem Entfernen äußerer Leerzeichen. Autor und Nutzer-ID stammen ausschließlich aus der serverseitigen Sitzung. Elternkommentare werden serverseitig geprüft; ein zusammengesetzter Fremdschlüssel erzwingt zusätzlich denselben Beitrag. Ein Übermittlungsschlüssel wird bei Wiederholung derselben fehlgeschlagenen Übermittlung wiederverwendet und pro Autor eindeutig gespeichert. Text bleibt bei Fehlern erhalten. Erfolgreiche Aktionen aktualisieren Feed, Community, Thread und Profilansichten über Next.js-Revalidierung und Router-Refresh. Gäste gelangen über klar beschriftete Links zum Login; serverseitige Schreibaktionen prüfen die Sitzung unabhängig von der Oberfläche.
-
-Schreibaktionen verwenden Next.js Server Actions wie die vorhandene Authentifizierung. Der Framework-Transport ist eine dokumentierte Ausnahme von der Axios-Präferenz; für Datenbankzugriffe werden keine eigenen HTTP-Endpunkte benötigt. Nutzerbezogene Stimmen werden pro Anfrage gelesen und nicht global gecacht. Neue Routen und Datenzugriffe liegen unter Suspense-Grenzen mit festen Ladezuständen. Tiefere Kommentarzweige behalten ihre Struktur und begrenzen die visuelle Einrückung auf schmalen Bildschirmen.
-
-Eigene Beiträge erstellen, Bearbeiten, Löschen, Moderation und Profilbearbeitung gehören derzeit nicht zum Funktionsumfang.
-
-## Erforderliche Inhaltsmigration
-
-```bash
-pnpm db:migrate
-```
-
-`0001_forum_content.sql` wurde auf die vorhandene Datenbank angewendet. Auf weiteren Installationen wird sie mit dem obigen Befehl angewendet. Sie ergänzt Beiträge, Kommentare und beide Stimmtabellen. Sie erhält die vorhandenen Nutzerkonten und übernimmt die bereits vorhandenen Texte einschließlich ihrer bisherigen Beitrags- und Kommentar-IDs. Die Startinhalte werden danach ausschließlich aus der Datenbank gelesen. Es gibt keinen Reset und keine automatische Neuerzeugung von Nutzern.
-
-Für die früheren Autorennamen ist keine Zugehörigkeit zu den bestehenden Konten belegt. Diese Namen bleiben daher mit leerer `author_id` erhalten und werden nicht automatisch gleichnamigen registrierten Nutzern zugeordnet. Neue Kommentare erhalten die tatsächliche Nutzer-ID. Die Erfassungszeit übernommener Inhalte ist der Zeitpunkt ihrer Migration; frühere relative Zeitangaben waren nicht gespeichert. Frühere vorgegebene Stimmzahlen werden durch die Summe tatsächlich gespeicherter Stimmen ersetzt. Kommentarzahlen werden gezählt, nicht übernommen.
-
-Schemaänderungen verwenden weiterhin versionierte Migrationen. Vorhandene SQL-Migrationen nach ihrer Anwendung nicht ändern; weitere Änderungen in einer neuen Migration festhalten.
-
-## Prüfstand
+### Abschlussprüfungen
 
 ```bash
 pnpm lint
 pnpm exec tsc --noEmit
 ```
 
-Für den Ausbau um Profile, Votes und Kommentare liefen beide statischen Prüfungen erfolgreich durch. Die neue Migration wurde einmal zur Einrichtung angewendet. Es wurden kein Dev-Server, kein Browsercheck, keine Parallelitätsprüfung, kein Build und keine zusätzliche Testsuite ausgeführt. Frühere Laufzeitprüfungen der Authentifizierung belegen nicht das neue Verhalten. Die Migration wurde von PostgreSQL erfolgreich übernommen; neue Interaktionen sind in diesem Schritt nicht zur Laufzeit geprüft.
+Entstandene Fehler beheben. Standardmäßig keine zusätzliche Testsuite, keinen Build und keine weiteren Prüfabläufe ohne Auftrag ausführen. Bei Layoutänderungen Desktop, schmale Bildschirme, Header-Überlappungen und Tastaturbedienung berücksichtigen. Abschließend Änderungen, tatsächlich ausgeführte Prüfungen und Einschränkungen kurz berichten; Oberflächendarstellung allein belegt keine funktionierende Persistenz.
+
+Die installierte Next.js-Version kann bei `next dev` automatisch eine `AGENTS.md` mit Framework-Hinweisen neu erzeugen (`node_modules/next/dist/server/lib/generate-agent-files.js`). Die projektspezifischen Leitplanken stehen in dieser README.
+
+## Offene Punkte und Prüfstand
+
+- Noch nicht implementiert: eigene Beiträge erstellen, Community-Beitritt, wählbare Feed-Sortierung, Bearbeiten/Löschen, Moderation, Profilbearbeitung und Passwort-Wiederherstellung. Chat, Awards und komplexe Empfehlungen sind mögliche spätere Erweiterungen, kein aktueller Auftrag.
+- Passwort-Minimum und Formulartexte angleichen; eine tatsächlich mitgelieferte `.env.example` fehlt. Diese Dokumentationsänderung ergänzt weder Code noch Dateien für diese Punkte.
+- Endgültiger Name, Logo und Hosting bleiben offen. Spezialfunktionen einer späteren Diskussionsplattform werden separat entwickelt.
+- Beim Dokumentationsabgleich war `forum-app-postgres-1` gestoppt und die konfigurierte Datenbankverbindung wurde abgewiesen. Die beiden Migrationsdateien sind im Repository vorhanden; aktuelles Live-Schema und angewendete Migrationen konnten deshalb nicht erneut abgeglichen werden. Datenbankinhalte wurden nicht verändert.
+- Für die zuvor implementierten Profile, Votes und Kommentare sind frühere erfolgreiche Lint-/Typprüfungen dokumentiert; neue Browser- und Parallelitätsprüfungen sind nicht belegt. Für diese README-Aktualisierung wurden Code, Konfigurationen und der Diff geprüft, keine neuen Funktionsprüfungen durchgeführt.
