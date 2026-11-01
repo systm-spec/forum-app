@@ -39,7 +39,7 @@ const ThreadContent = async ({ params }: ThreadPageProps) => {
           <Link className="text-link" href={`/c/${slug}`}>Community ansehen</Link>
         </InfoPanel>
         <InfoPanel title="Mitdiskutieren" eyebrow="Demnächst">
-          <p>Anmeldung, Abstimmungen und eigene Antworten werden in einem späteren Schritt ergänzt.</p>
+          <p>Abstimmungen und eigene Antworten werden in einem späteren Schritt ergänzt.</p>
         </InfoPanel>
       </aside>
     </>

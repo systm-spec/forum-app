@@ -6,20 +6,32 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:start": "docker compose --env-file .env.local up -d --wait postgres",
+    "db:stop": "docker compose --env-file .env.local stop postgres",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@node-rs/argon2": "2.2.2",
     "axios": "^1.21.0",
+    "drizzle-orm": "0.45.4",
     "next": "16.4.3",
+    "next-auth": "5.0.0-beta.32",
+    "pg": "8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-icons": "^5.7.0"
+    "react-icons": "^5.7.0",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
+    "@next/env": "16.4.3",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/pg": "8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "0.31.11",
     "eslint": "^10.13",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",

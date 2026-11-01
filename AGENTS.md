@@ -20,21 +20,22 @@ Das Projekt dient als Portfolio-Projekt und soll später nutzbar sein können.
 - Setze die jeweils beauftragte Aufgabe vollständig um. Diese Datei ist kein Auftrag, sämtliche erwähnten Funktionen gleichzeitig zu bauen.
 - Erstelle Wireframes oder zusätzliche Designvorschauen nur auf ausdrücklichen Wunsch.
 - Halte die Architektur dem Umfang eines Forums angemessen: klare Zuständigkeiten, kurze nachvollziehbare Wege und wenige Abstraktionsebenen.
-- Datenbank, Auth-Anbieter, Hosting, endgültiger Name und Logo sind noch offen. Lege sie nicht beiläufig als verbindliche Projektentscheidungen fest. Verwende bei Bedarf klar erkennbare Platzhalter.
+- PostgreSQL, Drizzle und Auth.js mit Nickname/Passwort sind festgelegt. Hosting, endgültiger Name und Logo sind noch offen. Lege sie nicht beiläufig als verbindliche Projektentscheidungen fest. Verwende bei Bedarf klar erkennbare Platzhalter.
 
 ## Aktueller Umsetzungsstand
 
-Stand nach der Stabilisierung des UI-Grundgerüsts:
+Stand nach der Integration von PostgreSQL und Nickname-Authentifizierung:
 
 - Das Next.js-Projekt ist initialisiert, die Starter-Inhalte sind entfernt, Prettier ist eingerichtet und das Repository liegt privat auf GitHub.
 - Homefeed, Community-Seiten und direkt aufrufbare Thread-Ansichten mit eingerückten Kommentaren sind umgesetzt.
 - Gemeinsame Beispieldaten, eine Suche im jeweiligen Feed und Nicht-gefunden-Seiten sind vorhanden.
 - Das Layout ist responsiv und durchgehend dunkel. Source Sans 3 ersetzt Geist.
 - `Forum` bleibt der vorläufige Name.
-- Login, eigene Beiträge, Antworten und echte Abstimmungen sind noch nicht verfügbar. Die angezeigten Stimmzahlen sind Demodaten.
+- Registrierung, Login, Logout und Nickname im Header sind mit PostgreSQL und Auth.js implementiert. Eigene Beiträge, Antworten und echte Abstimmungen sind noch nicht verfügbar; die angezeigten Stimmzahlen sind Demodaten.
 - Laufzeitabhängige URL-Hooks, `params` und `searchParams` liegen unter Suspense-Grenzen mit deterministischen Fallbacks. Die statische Header- und Navigationsstruktur bleibt darstellbar; Suchziel und Suchtext folgen der URL. Cache Components, Partial Prefetching und deren Validierung bleiben aktiv.
 - Begrenzter Dev-Server-Check: Home, alle drei Communitys, alle vier Threads, Suchtreffer und leere Ergebnisse, unbekannte URLs sowie falsche Community-/Thread-Zuordnungen geprüft. Gerenderte Inhalte, Suchformular, aktive Navigation, Kommentarzahlen und Serverlogs wurden kontrolliert. Dynamische Nicht-gefunden-Fälle senden den gestreamten Next.js-404-Zustand mit `noindex`.
-- Browserprüfungen einschließlich Klicknavigation, Zurück/Vorwärts und Browserkonsole waren mangels verfügbarer Browserwerkzeuge und Browser nicht möglich.
+- PostgreSQL 18 im lokalen Compose-Projekt ist healthy; die Drizzle-Migration wurde erfolgreich und erneut ohne zusätzliche Migration angewendet. Daten und Migrationshistorie blieben nach Stoppen und Neustart erhalten. Registrierung, Validierungsfehler, Nickname-Kollision unabhängig von Groß-/Kleinschreibung, falsches Passwort, Login, wiederholte Session-Abfragen, getrennte Nutzerkontexte und Logout wurden über echte Server-Action-Formulare per HTTP geprüft. Home, alle Communitys und Threads waren weiterhin ohne Rendering-Fehler öffentlich erreichbar.
+- Browserprüfungen einschließlich Klicknavigation, Neuladen, Zurück/Vorwärts und Browserkonsole waren mangels verfügbarer Browserwerkzeuge und Browser nicht möglich. Die defekte WSL-Compose-Verknüpfung wurde beim Prüflauf mit einer temporären offiziellen Compose-CLI umgangen; Einrichtungshinweise stehen in der README.
 - `pnpm lint` und `pnpm exec tsc --noEmit` liefen erfolgreich durch. Nach Codeänderungen sind die Prüfungen erneut auszuführen.
 
 Gleiche diesen Überblick vor neuen Aufgaben mit dem tatsächlichen Code ab und
@@ -49,6 +50,15 @@ fehlenden Funktionen gleichzeitig umzusetzen.
 - Halte den Stack aktuell. Behandle größere Versionswechsel als eigene Wartungsaufgabe mit Prüfung der Migration und Auswirkungen.
 - Verwende pnpm und pflege die zugehörige Lockdatei. Nutze die im Projekt festgelegte Node.js-Version und Paketmanager-Version.
 - Prüfe vor Änderungen vorhandene Dateien, Skripte und Konventionen. Ergänze neue Abhängigkeiten nur für einen konkreten Bedarf.
+
+## Datenbank und Authentifizierung
+
+- Nur PostgreSQL läuft in Docker Compose. Next.js läuft lokal in WSL. Der Datenbankport bleibt ausschließlich lokal veröffentlicht; persistente Volumes dürfen beim Stoppen nicht gelöscht werden.
+- Verwende Drizzle mit versionierten SQL-Migrationen und Metadaten in `drizzle/`. Kein Schema-Push als Ersatz. Datenbankkonfiguration kommt für Compose, Next.js und Drizzle aus derselben ignorierten `.env.local`; Platzhalter stehen in `.env.example`.
+- Nutzerdaten: UUID, Nickname, normalisierter eindeutiger Nickname, Argon2id-Hash und Erstellungszeitpunkt. Nicknames bestehen aus 3–24 ASCII-Zeichen (erster Buchstabe A–Z, danach auch Zahlen und Unterstriche). Passwörter haben 12–128 Zeichen und werden nicht getrimmt.
+- Keine E-Mail-Erfassung, E-Mail-Spalten, Ersatzadressen oder Mailabläufe. Auth.js-Credentials verwenden die eigene Drizzle-Nutzertabelle und JWT-Sessions ohne Datenbankadapter. ID und Nickname sind die einzigen nutzerbezogenen Session-/JWT-Daten.
+- Auth.js v5 ist aktuell als `next-auth@5.0.0-beta.32` gepinnt; die offiziellen Peer-Bereiche unterstützen die unveränderten Next.js-/React-Versionen. Den Beta-Status bei Wartung berücksichtigen.
+- Verbindungspool und Passwortlogik bleiben serverseitig. Sitzungen zentral mit `getCurrentUser()` pro echter Anfrage ermitteln und niemals global zwischen Nutzern cachen. Die Session-Anzeige liegt unter Suspense; `connection()` verhindert ein Prerendern der internen Auth.js-Zufallswerte.
 
 ## React und Code-Stil
 
@@ -70,6 +80,7 @@ fehlenden Funktionen gleichzeitig umzusetzen.
 - Prüfe vor der ersten Verwendung, ob Axios installiert ist; ergänze es bei Bedarf mit pnpm. Führe für diese Aufgabe allein keine künstlichen HTTP-Anfragen ein.
 - Bündele wiederkehrende API-Konfiguration und Requests bei tatsächlichem Bedarf in einer kleinen, typisierten API-Schicht. Nutze die Axios-Methoden direkt und vermeide eine zusätzliche generische Request-Abstraktion.
 - Verwende native `fetch`-Aufrufe nur bei einem konkreten technischen Grund, etwa einer benötigten Framework-Integration, und erläutere die Ausnahme kurz.
+- Auth.js-Abläufe verwenden dessen offizielle Funktionen `auth`, `signIn`, `signOut` und Server Actions. Diese bewusste Ausnahme von Axios ist in der README dokumentiert.
 - Serverseitige Datenzugriffe dürfen direkt auf die jeweilige Datenquelle zugreifen. Ein direkter Datenbankzugriff benötigt keinen HTTP-Umweg über die eigene API.
 
 ## Next.js und Routing
