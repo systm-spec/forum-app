@@ -42,7 +42,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           name="password"
           type="password"
           autoComplete={registering ? "new-password" : "current-password"}
-          minLength={12}
+          minLength={5}
           maxLength={128}
           required
           aria-invalid={Boolean(errors?.password)}
@@ -59,7 +59,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
             name="passwordConfirmation"
             type="password"
             autoComplete="new-password"
-            minLength={12}
+            minLength={5}
             maxLength={128}
             required
             aria-invalid={Boolean(errors?.passwordConfirmation)}

@@ -19,7 +19,7 @@ export const validateCredentials = ({ nickname, password }: CredentialsInput): V
   if (!/^[A-Za-z][A-Za-z0-9_]{2,23}$/.test(name)) {
     fieldErrors.nickname = "Nutze 3–24 Buchstaben, Zahlen oder Unterstriche. Beginne mit einem Buchstaben (A–Z).";
   }
-  if (typeof password !== "string" || password.length < 12 || password.length > 128) {
+  if (typeof password !== "string" || password.length < 5 || password.length > 128) {
     fieldErrors.password = "Das Passwort muss 12–128 Zeichen lang sein.";
   }
   if (Object.keys(fieldErrors).length) {
