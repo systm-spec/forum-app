@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Suspense } from "react";
-import { FeedFallback, SearchableFeed } from "@/components/feed";
-import { InfoPanel } from "@/components/info-panel";
+import { FeedFallback, SearchableFeed } from "@/components/Feed";
+import { InfoPanel } from "@/components/InfoPanel";
 import { communities } from "@/lib/communities";
 
 const HomePage = ({ searchParams }: PageProps<"/">) => (

@@ -2,7 +2,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getPosts } from "@/lib/forum/queries";
 import type { PostView } from "@/lib/forum/types";
 import { filterPosts, readQuery } from "@/lib/search";
-import { PostCard } from "./post-card";
+import { PostCard } from "./PostCard";
 
 type SearchableFeedProps = { communitySlug?: string; searchParams: Promise<{ q?: string | string[] }> };
 type FeedProps = { posts: PostView[]; query?: string; viewerId?: string };

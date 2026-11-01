@@ -2,7 +2,7 @@ import Link from "next/link";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 import { getCurrentUser } from "@/lib/auth/session";
 import { profilePath } from "@/lib/format";
-import { LogoutForm } from "./logout-form";
+import { LogoutForm } from "./LogoutForm";
 
 export const AccountFallback = () => (
   <div className="account-controls" role="status" aria-label="Konto wird geladen">

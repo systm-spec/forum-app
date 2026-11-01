@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ActiveNavigationLinks, NavigationLinks } from "./navigation-links";
+import { ActiveNavigationLinks, NavigationLinks } from "./NavigationLinks";
 
 export const Navigation = () => (
   <aside className="left-column" aria-label="Seitennavigation">

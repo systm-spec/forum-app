@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AuthForm } from "@/components/auth/auth-form";
-import { InfoPanel } from "@/components/info-panel";
+import { AuthForm } from "@/components/auth/AuthForm";
+import { InfoPanel } from "@/components/InfoPanel";
 
 export const metadata: Metadata = { title: "Registrieren · Forum" };
 

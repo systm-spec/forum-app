@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { AccountControls, AccountFallback } from "./auth/account-controls";
-import { RouteSearch, SearchForm } from "./search-form";
+import { AccountControls, AccountFallback } from "./auth/AccountControls";
+import { RouteSearch, SearchForm } from "./SearchForm";
 
 export const Header = () => (
   <header className="site-header">

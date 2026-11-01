@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { FeedFallback, SearchableFeed } from "@/components/feed";
-import { InfoPanel } from "@/components/info-panel";
+import { FeedFallback, SearchableFeed } from "@/components/Feed";
+import { InfoPanel } from "@/components/InfoPanel";
 import { communities } from "@/lib/communities";
 import { getCommunityPostCount } from "@/lib/forum/queries";
 

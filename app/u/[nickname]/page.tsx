@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { AuthorLink } from "@/components/author-link";
-import { Feed, FeedFallback } from "@/components/feed";
-import { InfoPanel } from "@/components/info-panel";
-import { VoteControls } from "@/components/vote-controls";
+import { AuthorLink } from "@/components/AuthorLink";
+import { Feed, FeedFallback } from "@/components/Feed";
+import { InfoPanel } from "@/components/InfoPanel";
+import { VoteControls } from "@/components/VoteControls";
 import { getCurrentUser } from "@/lib/auth/session";
 import { formatDate, formatTimestamp, threadPath } from "@/lib/format";
 import { getPosts, getProfileComments, getPublicProfile } from "@/lib/forum/queries";

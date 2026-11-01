@@ -2,8 +2,8 @@ import Link from "next/link";
 import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { formatTimestamp, threadPath } from "@/lib/format";
 import type { PostView } from "@/lib/forum/types";
-import { AuthorLink } from "./author-link";
-import { VoteControls } from "./vote-controls";
+import { AuthorLink } from "./AuthorLink";
+import { VoteControls } from "./VoteControls";
 
 type PostCardProps = { post: PostView; detail?: boolean; viewerId?: string };
 

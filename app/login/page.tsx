@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { AuthForm } from "@/components/auth/auth-form";
-import { InfoPanel } from "@/components/info-panel";
+import { AuthForm } from "@/components/auth/AuthForm";
+import { InfoPanel } from "@/components/InfoPanel";
 
 export const metadata: Metadata = { title: "Einloggen · Forum" };
 type LoginPageProps = { searchParams: Promise<{ registered?: string | string[]; error?: string | string[] }> };

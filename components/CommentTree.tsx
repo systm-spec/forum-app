@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { formatTimestamp } from "@/lib/format";
 import type { CommentView } from "@/lib/forum/types";
-import { AuthorLink } from "./author-link";
-import { CommentForm } from "./comment-form";
-import { VoteControls } from "./vote-controls";
+import { AuthorLink } from "./AuthorLink";
+import { CommentForm } from "./CommentForm";
+import { VoteControls } from "./VoteControls";
 
 type CommentTreeProps = { comments: CommentView[]; viewerId?: string };
 type CommentNode = CommentView & { replies: CommentNode[] };
